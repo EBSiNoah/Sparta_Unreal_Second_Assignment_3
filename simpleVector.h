@@ -6,30 +6,54 @@ using namespace std;
 template <typename Element> class SimpleVector
 {
 	private:
-		Element* s_vec;
+		Element** s_vec;
 		int cnt;
 		int space;
 
 	public:		
-		SimpleVector()
+		SimpleVector(int input_idx = 10)
 		{
-			s_vec = new Element[10];
+			space=input_idx;
+			s_vec = new Element*[space];
 			cnt=0;
-			space = 10;
-		}
-		
-		SimpleVector(int length)
-		{
-			s_vec = new Element[length];
-			cnt=0;
-			space = length;
+			int idx=0;
+			while(idx<space)
+			{
+				s_vec[idx]=nullptr;
+				idx++;
+			}
 		}
 		
 		SimpleVector(const SimpleVector& obj)
 		{
-			s_vec=obj.s_vec;
 			cnt=obj.cnt;
 			space=obj.space;
+			s_vec = new Element*[space];
+			int idx=0;
+			while(idx<space)
+			{
+				s_vec[idx]=obj.s_vec[idx];
+				idx++;
+			}
+		}
+		
+		SimpleVector& operator=(const SimpleVector& obj)
+		{
+			if(this != &obj)
+			{
+				delete[] s_vec;
+				
+				space = obj.space;
+				cnt = obj.cnt;
+				s_vec = new Element*[space];
+				int idx=0;
+				while(idx<space)
+				{
+					s_vec[idx]=obj.s_vec[idx];
+					idx++;
+				}
+			}
+			return *this;
 		}
 		
 		~SimpleVector()
@@ -37,9 +61,10 @@ template <typename Element> class SimpleVector
 			delete[] s_vec;
 			cnt=0;
 			space = 0;
+			cout<<"destructor"<<endl;
 		}
 		
-		void push_back(Element val)
+		void push_back(Element* val)
 		{
 			if(cnt<space)
 			{
@@ -48,20 +73,34 @@ template <typename Element> class SimpleVector
 			else
 			{
 				space+=5;
-				Element* after = new Element[space];
+				Element** after = new Element*[space];
 				int idx=0;
-				while(idx<cnt)
+				while(idx<space)
 				{
-					after[idx]=s_vec[idx];
+					if(idx<cnt)
+					{
+						after[idx]=s_vec[idx];
+					}
+					else
+					{
+						after[idx]=nullptr;
+					}
 					idx++;
 				}
 				delete[] s_vec;
 				after[cnt]=val;
 				idx=0;
-				s_vec=new Element[space];
-				while(idx<cnt+1)
+				s_vec=new Element*[space];
+				while(idx<space)
 				{
-					s_vec[idx]=after[idx];
+					if(idx<cnt+1)
+					{
+						s_vec[idx]=after[idx];
+					}
+					else
+					{
+						s_vec[idx]=nullptr;
+					}
 					idx++;
 				}
 				delete[] after;
@@ -74,22 +113,7 @@ template <typename Element> class SimpleVector
 			int idx=0;
 			if(cnt>0)
 			{
-				cout<<"pop is work?"<<endl;
-				Element* after = new Element[space];
-				while(idx<cnt-1)
-				{
-					after[idx]=s_vec[idx];
-					idx++;
-				}
-				delete[] s_vec;
-				s_vec = new Element[space];
-				idx=0;
-				while(idx<cnt-1)
-				{
-					s_vec[idx]=after[idx];
-					idx++;
-				}
-				delete[] after;
+				s_vec[cnt-1]=nullptr;
 				cnt--;
 			}
 		}
@@ -108,22 +132,35 @@ template <typename Element> class SimpleVector
 		{
 			if(newCapacity > space)
 			{
-				cout<<"resize is work?"<<endl;
 				space = newCapacity;
-				Element* after = new Element[newCapacity];
+				Element** after = new Element*[newCapacity];
 				int idx=0;
 				
-				while(idx < cnt)
+				while(idx < space)
 				{
-					after[idx]=s_vec[idx];
+					if(idx<cnt)
+					{
+						after[idx]=s_vec[idx];
+					}
+					else
+					{
+						after[idx]=nullptr;
+					}
 					idx++;
 				}
 				delete[] s_vec;
 				idx=0;
-				s_vec = new Element[newCapacity];
-				while(idx < cnt)
+				s_vec = new Element*[newCapacity];
+				while(idx < space)
 				{
-					s_vec[idx]=after[idx];
+					if(idx<cnt)
+					{
+						s_vec[idx]=after[idx];
+					}
+					else
+					{
+						s_vec[idx]=nullptr;
+					}
 					idx++;
 				}
 				delete[] after;
@@ -132,7 +169,13 @@ template <typename Element> class SimpleVector
 		
 		void sortData()
 		{
-			sort(s_vec, s_vec+cnt);
+			sort(s_vec, s_vec+cnt, [](Element* a, Element* b)
+			{
+				if (a == nullptr && b == nullptr) return false;
+            	if (a == nullptr) return false;
+            	if (b == nullptr) return true; 
+            	return *a < *b;
+			});
 		}
 		
 		void printVec()
@@ -140,15 +183,15 @@ template <typename Element> class SimpleVector
 			int idx=0;
 			while(idx<space)
 			{
-/*				if(idx<=cnt)
+				if(idx<cnt)
 				{
-					cout<<s_vec[idx]<<" | ";
+					cout<<*s_vec[idx]<<" | ";
 				}
 				else
 				{
 					cout<<"empty | ";
-				}*/
-				cout<<s_vec[idx]<<" | ";
+				}
+//				cout<<s_vec[idx]<<" | ";
 				idx++;
 			}
 			cout<<endl;
